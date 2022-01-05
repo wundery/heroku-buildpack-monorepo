@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Ensure wildcards in globs match dotfiles too.
+shopt -s dotglob
+
+indent() {
+    sed -u 's/^/      /'
+}
+
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+ENV_DIR="$3"
+
+if [ ! -f "${ENV_DIR}/HOIST_APP_FILES" ]; then
+    echo "HOIST_APP_FILES was not set. Aborting" | indent
+    exit 1
+fi
+
+HOIST_APP_FILES="$(cat "${ENV_DIR}/HOIST_APP_FILES" | tr "," "\n")"
+
+for file in $HOIST_APP_FILES
+do
+  file_basename="$(basename $file)"
+  if [[ -f "${BUILD_DIR}/$file" ]]; then
+    cp "${BUILD_DIR}/$file" "${BUILD_DIR}/$file_basename"
+    echo "Copied ${BUILD_DIR}/$file to ${BUILD_DIR}/$file_basename successfully" | indent
+  fi
+done
